@@ -1,10 +1,10 @@
-# MonsterUI Getting Started
+# AnthrosolUI Getting Started
 
 ## Installation
 
 To install this library, uses
 
-`pip install MonsterUI`
+`pip install anthrosolui`
 
 ## Getting Started
 
@@ -14,7 +14,7 @@ Run `python file.py` on this to start:
 
 ``` python
 from fasthtml.common import *
-from monsterui.all import *
+from anthrosolui.all import *
 
 # Choose a theme color (blue, green, red, etc)
 hdrs = Theme.blue.headers()
@@ -60,7 +60,7 @@ To get started, check out:
 
 ``` python
 from fasthtml.common import *
-from monsterui.all import *
+from anthrosolui.all import *
 ```
 
 2.  Instantiate the app with the MonsterUI headers

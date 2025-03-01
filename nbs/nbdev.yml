@@ -2,8 +2,8 @@ project:
   output-dir: _docs
 
 website:
-  title: "MonsterUI"
-  site-url: "https://Isaac-Flath.github.io/MonsterUI"
-  description: "The simplicity of FastHTML with the power of Tailwind"
+  title: "AnthrosolUI"
+  site-url: "https://breytenlybaert.github.io/AnthrosolUI"
+  description: "UI component library built on FastHTML, MonsterUI Tailwind, and DaisyUI"
   repo-branch: main
-  repo-url: "https://github.com/Isaac-Flath/MonsterUI"
+  repo-url: "https://github.com/breytenlybaert/AnthrosolUI"

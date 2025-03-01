@@ -1,7 +1,9 @@
 website:
   sidebar:
     contents:
-      - index.ipynb
       - 00_foundation.ipynb
       - 01_core.ipynb
-      - 02_components.ipynb
+      - 02_franken.ipynb
+      - 03_daisy.ipynb
+      - Untitled.ipynb
+      - Untitled1.ipynb
