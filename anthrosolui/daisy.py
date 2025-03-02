@@ -5,7 +5,7 @@ __all__ = ['AlertT', 'Alert', 'StepsT', 'StepT', 'Steps', 'LiStep', 'LoadingT', 
 
 # %% ../nbs/03_daisy.ipynb 2
 import fasthtml.common as fh
-from monsterui.foundations import *
+from .foundations import *
 from fasthtml.common import Div, Span, FT
 from fasthtml.svg import *
 from enum import auto
