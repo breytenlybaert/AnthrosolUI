@@ -95,6 +95,7 @@ HEADER_URLS = {
         'highlight_dark_css': "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-dark.css",
         'highlight_copy': "https://cdn.jsdelivr.net/gh/arronhunt/highlightjs-copy/dist/highlightjs-copy.min.js",
         'highlight_copy_css': "https://cdn.jsdelivr.net/gh/arronhunt/highlightjs-copy/dist/highlightjs-copy.min.css",
+        'material_symbols': "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200",
 }
 
 def _download_resource(url, static_dir):
@@ -183,7 +184,7 @@ class Theme(Enum):
     violet = auto()
     zinc = auto()
 
-    def _create_headers(self, urls, mode='auto', daisy=True, highlightjs=False, katex=True, radii=ThemeRadii.sm, shadows=ThemeShadows.sm, font=ThemeFont.sm):
+    def _create_headers(self, urls, mode='auto', daisy=True, highlightjs=False, katex=True, material_symbols=False, radii=ThemeRadii.sm, shadows=ThemeShadows.sm, font=ThemeFont.sm):
         "Create header elements with given URLs"
         hdrs = [
             fh.Link(rel="stylesheet", href=urls['franken_css']),
@@ -251,17 +252,22 @@ class Theme(Enum):
                 });
                 """,type="module"),
                 ]
+        if material_symbols:
+            hdrs += [
+                fh.Link(rel="stylesheet", href=urls['material_symbols']),
+            ]
+            
         return hdrs
 
-    def headers(self, mode='auto', daisy=True, highlightjs=False, katex=True, radii=ThemeRadii.sm, shadows=ThemeShadows.sm, font=ThemeFont.sm ):
+    def headers(self, mode='auto', daisy=True, highlightjs=False, katex=True, material_symbols=True, radii=ThemeRadii.sm, shadows=ThemeShadows.sm, font=ThemeFont.sm ):
         "Create frankenui and tailwind cdns"
-        return self._create_headers(HEADER_URLS, mode=mode, daisy=daisy, highlightjs=highlightjs, katex=katex, radii=radii, shadows=shadows, font=font)    
+        return self._create_headers(HEADER_URLS, mode=mode, daisy=daisy, highlightjs=highlightjs, katex=katex,material_symbols=material_symbols, radii=radii, shadows=shadows, font=font)    
     
-    def local_headers(self, mode='auto', static_dir='static', daisy=True, highlightjs=False, katex=True, radii='md', shadows='sm', font='sm'):
+    def local_headers(self, mode='auto', static_dir='static', daisy=True, highlightjs=False, katex=True, material_symbols=True, radii='md', shadows='sm', font='sm'):
         "Create headers using local files downloaded from CDNs"
         Path(static_dir).mkdir(exist_ok=True)
         local_urls = dict([_download_resource(url, static_dir) for url in HEADER_URLS.items()])
-        return self._create_headers(local_urls, mode=mode, daisy=daisy, highlightjs=highlightjs, katex=katex, radii=radii, shadows=shadows, font=font)
+        return self._create_headers(local_urls, mode=mode, daisy=daisy, highlightjs=highlightjs, katex=katex, material_icons=material_icons, radii=radii, shadows=shadows, font=font)
 
 # %% ../nbs/01_core.ipynb 19
 # EPSO Theme CSS variables
@@ -329,7 +335,7 @@ class AnthrosolTheme(Enum):
     
     epso = auto()
     
-    def headers(self, mode='auto', daisy=True, highlightjs=False, katex=True, 
+    def headers(self, mode='auto', daisy=True, highlightjs=False, katex=True, material_symbols=True, 
                 radii=ThemeRadii.sm, shadows=ThemeShadows.sm, font=ThemeFont.sm):
         """Create header elements for the custom theme."""
         # Get the base theme and CSS for this theme
@@ -340,10 +346,12 @@ class AnthrosolTheme(Enum):
             mode=mode, 
             daisy=daisy, 
             highlightjs=highlightjs, 
-            katex=katex, 
+            katex=katex,
+            material_symbols=material_symbols,
             radii=radii, 
             shadows=shadows, 
             font=font
+            
         )
         
         # Add custom CSS variables
@@ -356,7 +364,7 @@ class AnthrosolTheme(Enum):
         
         return (*base_headers, custom_style, theme_script)
     
-    def local_headers(self, mode='auto', static_dir='static', daisy=True, highlightjs=False, 
+    def local_headers(self, mode='auto', static_dir='static', daisy=True, highlightjs=False, material_symbols=True, 
                      katex=True, radii=ThemeRadii.sm, shadows=ThemeShadows.sm, font=ThemeFont.sm):
         """Create header elements using local files for the custom theme."""
         # Get the base theme and CSS for this theme
@@ -369,6 +377,7 @@ class AnthrosolTheme(Enum):
             daisy=daisy,
             highlightjs=highlightjs,
             katex=katex,
+            material_symbols=material_symbols,
             radii=radii,
             shadows=shadows,
             font=font

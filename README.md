@@ -30,7 +30,7 @@ from anthrosolui.all import *
 2.  Instantiate the app with the anthrosolui headers
 
 ``` python
-app = FastHTML(hdrs=Theme.blue.headers())
+app = FastHTML(hdrs=AnthrosolTheme.epso.headers())
 
 # Alternatively, using the fast_app method
 app, rt = fast_app(hdrs=Theme.slate.headers())

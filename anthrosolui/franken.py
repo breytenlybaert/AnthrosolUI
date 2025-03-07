@@ -10,14 +10,14 @@ __all__ = ['franken_class_map', 'TextT', 'TextPresets', 'CodeSpan', 'CodeBlock',
            'Upload', 'UploadZone', 'FormLabel', 'LabelT', 'Label', 'UkFormSection', 'GenericLabelInput', 'LabelInput',
            'LabelTextArea', 'LabelSwitch', 'LabelRadio', 'LabelCheckboxX', 'LabelSelect', 'Options', 'Select',
            'LabelRange', 'AT', 'ListT', 'ModalContainer', 'ModalDialog', 'ModalHeader', 'ModalBody', 'ModalFooter',
-           'ModalTitle', 'ModalCloseButton', 'Modal', 'Placeholder', 'Progress', 'UkIcon', 'UkIconLink',
-           'DiceBearAvatar', 'Center', 'FlexT', 'Grid', 'DivFullySpaced', 'DivCentered', 'DivLAligned', 'DivRAligned',
-           'DivVStacked', 'DivHStacked', 'NavT', 'NavContainer', 'NavParentLi', 'NavDividerLi', 'NavHeaderLi',
-           'NavSubtitle', 'NavCloseLi', 'ScrollspyT', 'NavBar', 'SliderContainer', 'SliderItems', 'SliderNav', 'Slider',
-           'DropDownNavContainer', 'TabContainer', 'CardT', 'CardTitle', 'CardHeader', 'CardBody', 'CardFooter',
-           'CardContainer', 'Card', 'TableT', 'Table', 'Td', 'Th', 'Tbody', 'TableFromLists', 'TableFromDicts',
-           'CalendarInput', 'apply_classes', 'render_md', 'get_franken_renderer', 'ThemePicker', 'LightboxContainer',
-           'LightboxItem']
+           'ModalTitle', 'ModalCloseButton', 'Modal', 'Placeholder', 'Progress', 'UkIcon', 'UkIconLink', 'MIcon',
+           'MIconLink', 'DiceBearAvatar', 'Center', 'FlexT', 'Grid', 'DivFullySpaced', 'DivCentered', 'DivLAligned',
+           'DivRAligned', 'DivVStacked', 'DivHStacked', 'NavT', 'NavContainer', 'NavParentLi', 'NavDividerLi',
+           'NavHeaderLi', 'NavSubtitle', 'NavCloseLi', 'ScrollspyT', 'NavBar', 'SliderContainer', 'SliderItems',
+           'SliderNav', 'Slider', 'DropDownNavContainer', 'TabContainer', 'CardT', 'CardTitle', 'CardHeader',
+           'CardBody', 'CardFooter', 'CardContainer', 'Card', 'TableT', 'Table', 'Td', 'Th', 'Tbody', 'TableFromLists',
+           'TableFromDicts', 'CalendarInput', 'apply_classes', 'render_md', 'get_franken_renderer', 'ThemePicker',
+           'LightboxContainer', 'LightboxItem']
 
 # %% ../nbs/02_franken.ipynb 3
 import fasthtml.common as fh
@@ -961,6 +961,86 @@ def UkIconLink(icon:str,  # Icon name from [lucide icons](https://lucide.dev/ico
         UkIcon(icon=icon, height=height, width=width, stroke_width=stroke_width))
 
 # %% ../nbs/02_franken.ipynb 91
+def MIcon(icon: str, # Icon name from Google Material Symbols
+          fill: int = 0,  # Fill value (0 or 1)
+          weight: int = 400,  # Weight value (100-700)
+          grade: int = 0,  # Grade value (-25 to 200)
+          height: int = 24,  # Size in pixels
+          cls = (), # Additional classes
+          **kwargs # Additional args
+         ) -> FT: # Material symbol element
+    """Creates a Google Material Symbols icon.
+    
+    Args:
+        icon: Icon name from Google Material Symbols (https://fonts.google.com/icons)
+        fill: Fill value (0 or 1)
+        weight: Weight value (100-700)
+        grade: Grade value (-25 to 200)
+        size: Size in pixels (determines optical size)
+        cls: Additional classes
+        **kwargs: Additional attributes for the element
+    
+    Returns:
+        A span element with the appropriate icon classes
+    """
+    # Validate fill value
+    if fill not in [0, 1]:
+        fill = 0
+    
+    # Validate weight value
+    weight = max(100, min(700, weight))
+    
+    # Validate grade value
+    grade = max(-25, min(200, grade))
+    
+    # Calculate optical size based on the size parameter
+    # Material Symbols support 20, 24, 40, 48
+    if height <= 22:
+        opt_size = 20
+    elif height <= 32:
+        opt_size = 24
+    elif height <= 44:
+        opt_size = 40
+    else:
+        opt_size = 48
+    
+    # Apply the font variation settings
+    style = {}
+    style_str = f"font-variation-settings: 'FILL' {fill}, 'wght' {weight}, 'GRAD' {grade}, 'opsz' {opt_size}"
+    
+    if 'style' in kwargs:
+        if isinstance(kwargs['style'], dict):
+            # Handle dict style
+            kwargs['style']['font-variation-settings'] = f"'FILL' {fill}, 'wght' {weight}, 'GRAD' {grade}, 'opsz' {opt_size}"
+            if height:
+                kwargs['style']['font-size'] = f"{height}px"
+        else:
+            # Handle string style
+            font_size = f"font-size: {height}px; " if height else ""
+            kwargs['style'] = f"{kwargs['style']}; {style_str}; {font_size}".strip()
+    else:
+        # No existing style, create new style string
+        font_size = f"font-size: {height}px; " if height else ""
+        kwargs['style'] = f"{style_str}; {font_size}".strip("; ")
+    
+    return Span(icon, cls=("material-symbols-outlined", stringify(cls)), **kwargs)
+
+# %% ../nbs/02_franken.ipynb 92
+def MIconLink(icon:str,  # Icon name from Google Material Symbols
+          fill:int = 0,  # Fill value (0 or 1)
+          weight:int = 400,  # Weight value (100-700)
+          grade:int = 0,  # Grade value (-25 to 200)
+          height:int = 24,  # Size in pixels
+          cls=(), # Additional classes on the icon
+          button:bool=False, # Whether to use a button (defaults to a link)
+          **kwargs # Additional args for `A` or `Button` tag
+          )->FT: # a Material icon button or link of the specified size
+    "Creates a Material Symbols icon link or button"
+    fn = fh.Button if button else fh.A
+    return fn(cls=(f"uk-icon-{'button' if button else 'link'}", stringify(cls)), **kwargs)(
+        MIcon(icon=icon, fill=fill, weight=weight, grade=grade, height=height))
+
+# %% ../nbs/02_franken.ipynb 93
 def DiceBearAvatar(seed_name:str, # Seed name (ie 'Isaac Flath')
                    h:int=20,         # Height 
                    w:int=20,          # Width
@@ -970,7 +1050,7 @@ def DiceBearAvatar(seed_name:str, # Seed name (ie 'Isaac Flath')
     return Span(cls=f"relative flex h-{h} w-{w} shrink-0 overflow-hidden rounded-full bg-white border-2 border-black")(
             fh.Img(cls=f"aspect-square h-{h} w-{w}", alt="Avatar", loading="lazy", src=f"{url}{seed_name}"))
 
-# %% ../nbs/02_franken.ipynb 94
+# %% ../nbs/02_franken.ipynb 96
 def Center(*c, # Components to center
           vertical:bool=True, # Whether to center vertically
           horizontal:bool=True, # Whether to center horizontally 
@@ -983,7 +1063,7 @@ def Center(*c, # Components to center
     if horizontal: classes.append('justify-center min-w-full')
     return fh_comp.Center(*c, cls=(stringify(classes), stringify(cls)), **kwargs)
 
-# %% ../nbs/02_franken.ipynb 99
+# %% ../nbs/02_franken.ipynb 101
 class FlexT(VEnum):
     'Flexbox modifiers using Tailwind CSS'
     def _generate_next_value_(name, start, count, last_values): return name
@@ -1016,7 +1096,7 @@ class FlexT(VEnum):
     wrap = 'flex-wrap'
     wrap_reverse = 'flex-wrap-reverse'
 
-# %% ../nbs/02_franken.ipynb 101
+# %% ../nbs/02_franken.ipynb 103
 def Grid(*div, # `Div` components to put in the grid
          cols_min:int=1, # Minimum number of columns at any screen size
          cols_max:int=4, # Maximum number of columns allowed at any screen size
@@ -1039,7 +1119,7 @@ def Grid(*div, # `Div` components to put in the grid
         cols_xl = cols_xl or cols_max
     return Div(cls=(f'grid grid-cols-{cols_min} sm:grid-cols-{cols_sm} md:grid-cols-{cols_md} lg:grid-cols-{cols_lg} xl:grid-cols-{cols_xl}', stringify(cls)), **kwargs)(*div)
 
-# %% ../nbs/02_franken.ipynb 102
+# %% ../nbs/02_franken.ipynb 104
 def DivFullySpaced(*c,                # Components
                    cls='w-full',# Classes for outer div (`w-full` makes it use all available width)
                    **kwargs           # Additional args for outer div
@@ -1048,7 +1128,7 @@ def DivFullySpaced(*c,                # Components
     cls = stringify(cls)
     return Div(cls=(FlexT.block,FlexT.between,FlexT.middle,cls), **kwargs)(*c)
 
-# %% ../nbs/02_franken.ipynb 103
+# %% ../nbs/02_franken.ipynb 105
 def DivCentered(*c,      # Components
                 cls='space-y-4',  # Classes for outer div (`space-y-4` provides spacing between components)
                 vstack=True, # Whether to stack the components vertically
@@ -1058,7 +1138,7 @@ def DivCentered(*c,      # Components
     cls=stringify(cls)
     return Div(cls=(FlexT.block,(FlexT.column if vstack else FlexT.row),FlexT.middle,FlexT.center,cls),**kwargs)(*c)
 
-# %% ../nbs/02_franken.ipynb 104
+# %% ../nbs/02_franken.ipynb 106
 def DivLAligned(*c, # Components
                 cls='space-x-4',  # Classes for outer div
                 **kwargs # Additional args for outer div
@@ -1067,7 +1147,7 @@ def DivLAligned(*c, # Components
     cls=stringify(cls)
     return Div(cls=(FlexT.block,FlexT.left,FlexT.middle,cls), **kwargs)(*c)
 
-# %% ../nbs/02_franken.ipynb 105
+# %% ../nbs/02_franken.ipynb 107
 def DivRAligned(*c, # Components
                 cls='space-x-4',  # Classes for outer div
                 **kwargs # Additional args for outer div
@@ -1076,7 +1156,7 @@ def DivRAligned(*c, # Components
     cls=stringify(cls)
     return Div(cls=(FlexT.block,FlexT.right,FlexT.middle,cls), **kwargs)(*c)
 
-# %% ../nbs/02_franken.ipynb 106
+# %% ../nbs/02_franken.ipynb 108
 def DivVStacked(*c, # Components
                 cls='space-y-4', # Additional classes on the div  (tip: `space-y-4` provides spacing between components)
                 **kwargs # Additional args for the div
@@ -1085,7 +1165,7 @@ def DivVStacked(*c, # Components
     cls=stringify(cls)
     return Div(cls=(FlexT.block,FlexT.column,FlexT.middle,cls), **kwargs)(*c)
 
-# %% ../nbs/02_franken.ipynb 107
+# %% ../nbs/02_franken.ipynb 109
 def DivHStacked(*c, # Components
                 cls='space-x-4', # Additional classes on the div (`space-x-4` provides spacing between components)
                 **kwargs # Additional args for the div
@@ -1094,14 +1174,14 @@ def DivHStacked(*c, # Components
     cls=stringify(cls)
     return Div(cls=(FlexT.block,FlexT.row,FlexT.middle,cls), **kwargs)(*c)
 
-# %% ../nbs/02_franken.ipynb 109
+# %% ../nbs/02_franken.ipynb 111
 class NavT(VEnum):
     def _generate_next_value_(name, start, count, last_values): return str2ukcls('nav', name)
     default = auto()
     primary = auto()
     secondary = auto()
 
-# %% ../nbs/02_franken.ipynb 110
+# %% ../nbs/02_franken.ipynb 112
 def NavContainer(*li, # List items are navigation elements (Special `Li` such as `NavParentLi`, `NavDividerLi`, `NavHeaderLi`, `NavSubtitle`, `NavCloseLi` can also be used)
                  cls=NavT.primary, # Additional classes on the nav
                  parent=True, # Whether this nav is a *parent* or *sub* nav
@@ -1118,7 +1198,7 @@ def NavContainer(*li, # List items are navigation elements (Special `Li` such as
     _sticky = 'float-left sticky top-4 hidden md:block' if sticky else ''
     return fh.Ul(*li, uk_nav=uk_nav, cls=(f"uk-nav{'' if parent else '-sub'}", stringify(cls), _sticky), uk_scrollspy_nav=_uk_scrollspy_nav, **kwargs)
 
-# %% ../nbs/02_franken.ipynb 111
+# %% ../nbs/02_franken.ipynb 113
 def NavParentLi(*nav_container, # `NavContainer` container for a nested nav with `parent=False`)
                 cls=(), # Additional classes on the li
                 **kwargs # Additional args for the li
@@ -1150,12 +1230,12 @@ def NavCloseLi(*c, # Components
     "Creates a navigation list item with a close button"
     return fh.Li(*c, cls=('uk-drop-close', stringify(cls)),**kwargs)
 
-# %% ../nbs/02_franken.ipynb 114
+# %% ../nbs/02_franken.ipynb 116
 class ScrollspyT(VEnum):
     underline = 'navbar-underline'
     bold = 'navbar-bold'
 
-# %% ../nbs/02_franken.ipynb 115
+# %% ../nbs/02_franken.ipynb 117
 def NavBar(*c, # Component for right side of navbar (Often A tag links)
            brand=H3("Title"), # Brand/logo component for left side
            right_cls='items-center space-x-4', # Spacing for desktop links
@@ -1186,7 +1266,7 @@ def NavBar(*c, # Component for right side of navbar (Often A tag links)
                     id=menu_id, uk_scrollspy_nav=uk_scrollspy_nav),
         cls=sticky_cls)
 
-# %% ../nbs/02_franken.ipynb 117
+# %% ../nbs/02_franken.ipynb 119
 def SliderContainer(
         *c, # Components
         cls='', # Additional classes on the container
@@ -1196,7 +1276,7 @@ def SliderContainer(
     "Creates a slider container"
     return Div(*c, cls=('relative', stringify(cls)), uk_slider=uk_slider, **kwargs)
 
-# %% ../nbs/02_franken.ipynb 118
+# %% ../nbs/02_franken.ipynb 120
 def SliderItems(
         *c, # Components
         cls='', # Additional classes for the items
@@ -1205,7 +1285,7 @@ def SliderItems(
     "Creates a slider items container"
     return Div(*c, cls=('uk-slider-items uk-grid', stringify(cls)), **kwargs)
 
-# %% ../nbs/02_franken.ipynb 120
+# %% ../nbs/02_franken.ipynb 122
 def SliderNav(
         cls='uk-position-small uk-hidden-hover', # Additional classes for the navigation
         prev_cls='absolute left-0 top-1/2 -translate-y-1/2', # Additional classes for the previous navigation
@@ -1220,7 +1300,7 @@ def SliderNav(
              uk_slidenav_next=True, uk_slider_item='next', **kwargs)
     )
 
-# %% ../nbs/02_franken.ipynb 121
+# %% ../nbs/02_franken.ipynb 123
 def Slider(*c, # Items to show in slider
            cls='', # Classes for slider container
            items_cls='gap-4', # Classes for items container
@@ -1237,7 +1317,7 @@ def Slider(*c, # Items to show in slider
         **kwargs
     )
 
-# %% ../nbs/02_franken.ipynb 124
+# %% ../nbs/02_franken.ipynb 126
 def DropDownNavContainer(*li, # Components
                          cls=NavT.primary, # Additional classes on the nav
                          parent=True, # Whether to use a parent nav
@@ -1248,7 +1328,7 @@ def DropDownNavContainer(*li, # Components
     "A Nav that is part of a DropDown"
     return Div(cls = 'uk-drop uk-dropdown w-auto min-w-max',uk_dropdown=uk_dropdown)(NavContainer(*li, cls=('uk-dropdown-nav',stringify(cls)), uk_nav=uk_nav, parent=parent, **kwargs))
 
-# %% ../nbs/02_franken.ipynb 126
+# %% ../nbs/02_franken.ipynb 128
 def TabContainer(*li, # Components
                   cls='', # Additional classes on the `Ul`
                   alt=False, # Whether to use an alternative tab style
@@ -1258,7 +1338,7 @@ def TabContainer(*li, # Components
     cls = stringify(cls)
     return Ul(cls=(f"uk-tab{'-alt' if alt else ''}",stringify(cls)),**kwargs)(*li)
 
-# %% ../nbs/02_franken.ipynb 128
+# %% ../nbs/02_franken.ipynb 130
 class CardT(VEnum):
     'Card styles from UIkit'
     def _generate_next_value_(name, start, count, last_values): return str2ukcls('card', name)
@@ -1268,7 +1348,7 @@ class CardT(VEnum):
     destructive = auto()
     hover = 'uk-card hover:shadow-lg hover:-translate-y-1 transition-all duration-200'
 
-# %% ../nbs/02_franken.ipynb 129
+# %% ../nbs/02_franken.ipynb 131
 def CardTitle(*c, # Components (often a string)
               cls=(), # Additional classes on the div
               **kwargs # Additional args for the div
@@ -1304,7 +1384,7 @@ def CardContainer(*c, # Components (typically `CardHeader`, `CardBody`, `CardFoo
     "Creates a card container"
     return fh.Div(*c, cls=('uk-card',stringify(cls)), **kwargs)
 
-# %% ../nbs/02_franken.ipynb 130
+# %% ../nbs/02_franken.ipynb 132
 def Card(*c, # Components that go in the body (Main content of the card such as a form, and image, a signin form, etc.)
         header:FT|Iterable[FT]=None, # Component(s) that goes in the header (often a `ModalTitle` and a subtitle)
         footer:FT|Iterable[FT]=None,  # Component(s) that goes in the footer (often a `ModalCloseButton`)
@@ -1322,7 +1402,7 @@ def Card(*c, # Components that go in the body (Main content of the card such as 
     if footer: res.append(CardFooter(cls=footer_cls)(footer))
     return CardContainer(cls=cls, **kwargs)(*res)
 
-# %% ../nbs/02_franken.ipynb 132
+# %% ../nbs/02_franken.ipynb 134
 class TableT(VEnum):
     def _generate_next_value_(name, start, count, last_values): return str2ukcls('table', name)
     divider = auto()
@@ -1334,7 +1414,7 @@ class TableT(VEnum):
     middle = auto()
     responsive = auto()
 
-# %% ../nbs/02_franken.ipynb 133
+# %% ../nbs/02_franken.ipynb 135
 def Table(*c, # Components (typically `Thead`, `Tbody`, `Tfoot`)
           cls=(TableT.middle, TableT.divider, TableT.hover, TableT.sm), # Additional classes on the table
           **kwargs # Additional args for the table
@@ -1342,7 +1422,7 @@ def Table(*c, # Components (typically `Thead`, `Tbody`, `Tfoot`)
     "Creates a table"
     return fh.Table(cls=('uk-table', stringify(cls)), *c, **kwargs)
 
-# %% ../nbs/02_franken.ipynb 134
+# %% ../nbs/02_franken.ipynb 136
 def _TableCell(Component, 
                *c, # Components that go in the cell
                cls=(), # Additional classes on the cell container
@@ -1365,7 +1445,7 @@ def Th(*c,**kwargs): return _TableCell(fh.Th, *c, **kwargs)
 
 def Tbody(*rows, cls=(), sortable=False, **kwargs): return fh.Tbody(*rows, cls=stringify(cls), uk_sortable=sortable, **kwargs)
 
-# %% ../nbs/02_franken.ipynb 135
+# %% ../nbs/02_franken.ipynb 137
 def TableFromLists(header_data:Sequence, # List of header data
                    body_data:Sequence[Sequence], # List of lists of body data
                    footer_data=None, # List of footer data
@@ -1384,7 +1464,7 @@ def TableFromLists(header_data:Sequence, # List of header data
                 cls=stringify(cls),    
                 **kwargs)
 
-# %% ../nbs/02_franken.ipynb 136
+# %% ../nbs/02_franken.ipynb 138
 def TableFromDicts(header_data:Sequence, # List of header data
                    body_data:Sequence[dict], # List of dicts of body data
                    footer_data=None, # List of footer data
@@ -1404,7 +1484,7 @@ def TableFromDicts(header_data:Sequence, # List of header data
         **kwargs
     )
 
-# %% ../nbs/02_franken.ipynb 139
+# %% ../nbs/02_franken.ipynb 141
 def CalendarInput(
     cls = "",  # Additional classes
     today: bool = False,  # Automatically sets today as the active date.
@@ -1471,7 +1551,7 @@ def CalendarInput(
     # Return the fastHTML web component
     return fh.ft_html("uk-calendar", cls=stringify(cls), **{**attrs, **kwargs})
 
-# %% ../nbs/02_franken.ipynb 143
+# %% ../nbs/02_franken.ipynb 145
 franken_class_map = {
     'h1': 'uk-h1 text-4xl font-bold mt-12 mb-6',
     'h2': 'uk-h2 text-3xl font-bold mt-10 mb-5', 
@@ -1503,7 +1583,7 @@ franken_class_map = {
     'img': 'max-w-full h-auto rounded-lg mb-6'
 }
 
-# %% ../nbs/02_franken.ipynb 144
+# %% ../nbs/02_franken.ipynb 146
 def apply_classes(html_str:str, # Html string
                   class_map=None, # Class map
                   class_map_mods=None # Class map that will modify the class map map (useful for small changes to a base class map)
@@ -1525,7 +1605,7 @@ def apply_classes(html_str:str, # Html string
     except etree.ParserError:
         return html_str
 
-# %% ../nbs/02_franken.ipynb 148
+# %% ../nbs/02_franken.ipynb 150
 def render_md(md_content:str, # Markdown content
                class_map=None, # Class map
                class_map_mods=None # Additional class map
@@ -1536,7 +1616,7 @@ def render_md(md_content:str, # Markdown content
     html_content = mistletoe.markdown(md_content) #, mcp.PygmentsRenderer)
     return NotStr(apply_classes(html_content, class_map, class_map_mods))
 
-# %% ../nbs/02_franken.ipynb 150
+# %% ../nbs/02_franken.ipynb 152
 def get_franken_renderer(img_dir):
     "Create a renderer class with the specified img_dir"
     class FrankenRenderer(HTMLRenderer):
@@ -1551,7 +1631,7 @@ def get_franken_renderer(img_dir):
             return template.format(src, token.children[0].content if token.children else '', title)
     return FrankenRenderer
 
-# %% ../nbs/02_franken.ipynb 151
+# %% ../nbs/02_franken.ipynb 153
 def render_md(md_content:str, # Markdown content
              class_map=None, # Class map
              class_map_mods=None, # Additional class map
@@ -1563,7 +1643,7 @@ def render_md(md_content:str, # Markdown content
     html_content = mistletoe.markdown(md_content, renderer)
     return NotStr(apply_classes(html_content, class_map, class_map_mods))
 
-# %% ../nbs/02_franken.ipynb 153
+# %% ../nbs/02_franken.ipynb 155
 def ThemePicker(color=True, radii=True, shadows=True, font=True, mode=True, cls='p-4', custom_themes=[]):
     "Theme picker component with configurable sections"
     def _opt(val, txt, **kwargs): return Option(txt, value=val, **kwargs)
@@ -1590,7 +1670,7 @@ def ThemePicker(color=True, radii=True, shadows=True, font=True, mode=True, cls=
     from fasthtml.components import Uk_theme_switcher
     return Div(Uk_theme_switcher(fh.Select(*groups, hidden=True),  id="theme-switcher"), cls=stringify(cls))
 
-# %% ../nbs/02_franken.ipynb 166
+# %% ../nbs/02_franken.ipynb 168
 def LightboxContainer(*lightboxitem, # `LightBoxItem`s that will be inside lightbox
                       data_uk_lightbox='counter: true', # See https://franken-ui.dev/docs/2.0/lightbox for advanced options
                       **kwargs # Additional options for outer container
@@ -1598,7 +1678,7 @@ def LightboxContainer(*lightboxitem, # `LightBoxItem`s that will be inside light
     "Lightbox container that will hold `LightboxItems`"
     return fh.Div(*lightboxitem, data_uk_lightbox=data_uk_lightbox, **kwargs)
 
-# %% ../nbs/02_franken.ipynb 167
+# %% ../nbs/02_franken.ipynb 169
 def LightboxItem(*c, # Component that when clicked will open the lightbox (often a button)
                  href, # Href to image, youtube video, vimeo, google maps, etc.
                  data_alt=None, # Alt text for the lightbox item/image
