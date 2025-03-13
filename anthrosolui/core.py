@@ -262,26 +262,75 @@ class Theme(Enum):
             hdrs += [
                 fh.Script(src="https://unpkg.com/htmx-ext-sse@2.2.1/sse.js"),
                 fh.Script("""
-                document.addEventListener("DOMContentLoaded", () => {
-                    document.querySelectorAll('[data-stream-url]').forEach(el => {
-                        const streamUrl = el.getAttribute('data-stream-url');
-                        const evtSource = new EventSource(streamUrl);
-    
-                        evtSource.addEventListener("message", (event) => {
-                            el.innerHTML += event.data;
-                        });
-    
-                        evtSource.addEventListener("done", () => {
-                            console.log('SSE connection gracefully closed.');
-                            evtSource.close();
-                        });
-    
-                        evtSource.onerror = (e) => {
-                            console.error('SSE connection error:', e);
-                            evtSource.close();
-                        };
-                    });
+
+// Function to initialize a single streaming container
+function initializeStreamContainer(el) {
+    if (el.dataset.initialized === 'true') return;
+
+    const streamUrl = el.getAttribute('data-stream-url');
+    if (!streamUrl) return;
+
+    const evtSource = new EventSource(streamUrl);
+
+    evtSource.addEventListener("message", (event) => {
+        el.innerHTML += event.data;
+    });
+
+    evtSource.addEventListener("done", () => {
+        console.log('SSE connection gracefully closed.');
+        evtSource.close();
+    });
+
+    evtSource.onerror = (e) => {
+        console.error('SSE connection error:', e);
+        evtSource.close();
+    };
+
+    el.dataset.initialized = 'true';
+}
+
+// Function to initialize all streaming containers
+function initializeAllStreamContainers() {
+    document.querySelectorAll('[data-stream-url]:not([data-initialized="true"])').forEach(el => {
+        initializeStreamContainer(el);
+    });
+}
+
+// Initialize containers and MutationObserver after DOM is ready
+document.addEventListener("DOMContentLoaded", () => {
+    initializeAllStreamContainers();
+
+    const observer = new MutationObserver((mutations) => {
+        let shouldInitialize = false;
+
+        mutations.forEach(mutation => {
+            if (mutation.addedNodes.length) {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        if (node.hasAttribute && node.hasAttribute('data-stream-url')) {
+                            shouldInitialize = true;
+                        }
+
+                        if (node.querySelectorAll && node.querySelectorAll('[data-stream-url]').length > 0) {
+                            shouldInitialize = true;
+                        }
+                    }
                 });
+            }
+        });
+
+        if (shouldInitialize) {
+            initializeAllStreamContainers();
+        }
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+});
+
+
                 """)
             ]
             
