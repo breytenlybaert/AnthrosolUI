@@ -184,7 +184,7 @@ class Theme(Enum):
     violet = auto()
     zinc = auto()
 
-    def _create_headers(self, urls, mode='auto', daisy=True, highlightjs=False, katex=True, material_symbols=False, radii=ThemeRadii.sm, shadows=ThemeShadows.sm, font=ThemeFont.sm):
+    def _create_headers(self, urls, mode='auto', daisy=True, highlightjs=False, katex=True, material_symbols=False, streaming=True, radii=ThemeRadii.sm, shadows=ThemeShadows.sm, font=ThemeFont.sm):
         "Create header elements with given URLs"
         hdrs = [
             fh.Link(rel="stylesheet", href=urls['franken_css']),
@@ -252,22 +252,50 @@ class Theme(Enum):
                 });
                 """,type="module"),
                 ]
+            
         if material_symbols:
             hdrs += [
                 fh.Link(rel="stylesheet", href=urls['material_symbols']),
             ]
+
+        if streaming:
+            hdrs += [
+                fh.Script(src="https://unpkg.com/htmx-ext-sse@2.2.1/sse.js"),
+                fh.Script("""
+                document.addEventListener("DOMContentLoaded", () => {
+                    document.querySelectorAll('[data-stream-url]').forEach(el => {
+                        const streamUrl = el.getAttribute('data-stream-url');
+                        const evtSource = new EventSource(streamUrl);
+    
+                        evtSource.addEventListener("message", (event) => {
+                            el.innerHTML += event.data;
+                        });
+    
+                        evtSource.addEventListener("done", () => {
+                            console.log('SSE connection gracefully closed.');
+                            evtSource.close();
+                        });
+    
+                        evtSource.onerror = (e) => {
+                            console.error('SSE connection error:', e);
+                            evtSource.close();
+                        };
+                    });
+                });
+                """)
+            ]
             
         return hdrs
 
-    def headers(self, mode='auto', daisy=True, highlightjs=False, katex=True, material_symbols=True, radii=ThemeRadii.sm, shadows=ThemeShadows.sm, font=ThemeFont.sm ):
+    def headers(self, mode='auto', daisy=True, highlightjs=False, katex=True, material_symbols=True, streaming=True, radii=ThemeRadii.sm, shadows=ThemeShadows.sm, font=ThemeFont.sm ):
         "Create frankenui and tailwind cdns"
-        return self._create_headers(HEADER_URLS, mode=mode, daisy=daisy, highlightjs=highlightjs, katex=katex,material_symbols=material_symbols, radii=radii, shadows=shadows, font=font)    
+        return self._create_headers(HEADER_URLS, mode=mode, daisy=daisy, highlightjs=highlightjs, katex=katex,material_symbols=material_symbols, streaming=streaming, radii=radii, shadows=shadows, font=font)    
     
-    def local_headers(self, mode='auto', static_dir='static', daisy=True, highlightjs=False, katex=True, material_symbols=True, radii='md', shadows='sm', font='sm'):
+    def local_headers(self, mode='auto', static_dir='static', daisy=True, highlightjs=False, katex=True, material_symbols=True, streaming=True, radii='md', shadows='sm', font='sm'):
         "Create headers using local files downloaded from CDNs"
         Path(static_dir).mkdir(exist_ok=True)
         local_urls = dict([_download_resource(url, static_dir) for url in HEADER_URLS.items()])
-        return self._create_headers(local_urls, mode=mode, daisy=daisy, highlightjs=highlightjs, katex=katex, material_icons=material_icons, radii=radii, shadows=shadows, font=font)
+        return self._create_headers(local_urls, mode=mode, daisy=daisy, highlightjs=highlightjs, katex=katex, material_icons=material_icons, streaming=streaming, radii=radii, shadows=shadows, font=font)
 
 # %% ../nbs/01_core.ipynb 19
 # EPSO Theme CSS variables
@@ -335,7 +363,7 @@ class AnthrosolTheme(Enum):
     
     epso = auto()
     
-    def headers(self, mode='auto', daisy=True, highlightjs=False, katex=True, material_symbols=True, 
+    def headers(self, mode='auto', daisy=True, highlightjs=False, katex=True, material_symbols=True, streaming=True, 
                 radii=ThemeRadii.sm, shadows=ThemeShadows.sm, font=ThemeFont.sm):
         """Create header elements for the custom theme."""
         # Get the base theme and CSS for this theme
@@ -347,25 +375,25 @@ class AnthrosolTheme(Enum):
             daisy=daisy, 
             highlightjs=highlightjs, 
             katex=katex,
-            material_symbols=material_symbols,
+            material_symbols=material_symbols,  # Make sure this matches the parameter in Theme class
+            streaming=streaming,
             radii=radii, 
             shadows=shadows, 
             font=font
-            
         )
         
         # Add custom CSS variables
         custom_style = Style(css_vars)
         
         # Add script to apply custom theme class
-        theme_script = Script(f"""
-            document.documentElement.classList.add('uk-theme-{self.value}');
-        """)
+        theme_script = fh.Script(f'''
+            document.documentElement.classList.add("uk-theme-{self.value}");
+        ''')
         
         return (*base_headers, custom_style, theme_script)
     
-    def local_headers(self, mode='auto', static_dir='static', daisy=True, highlightjs=False, material_symbols=True, 
-                     katex=True, radii=ThemeRadii.sm, shadows=ThemeShadows.sm, font=ThemeFont.sm):
+    def local_headers(self, mode='auto', static_dir='static', daisy=True, highlightjs=False, katex=True,
+                     material_symbols=True, streaming=True, radii=ThemeRadii.sm, shadows=ThemeShadows.sm, font=ThemeFont.sm):
         """Create header elements using local files for the custom theme."""
         # Get the base theme and CSS for this theme
         base_theme, css_vars = self._get_theme_config()
@@ -377,7 +405,8 @@ class AnthrosolTheme(Enum):
             daisy=daisy,
             highlightjs=highlightjs,
             katex=katex,
-            material_symbols=material_symbols,
+            material_symbols=material_symbols,  # Fixed parameter name
+            streaming=streaming,
             radii=radii,
             shadows=shadows,
             font=font
@@ -387,9 +416,9 @@ class AnthrosolTheme(Enum):
         custom_style = Style(css_vars)
         
         # Add script to apply custom theme class
-        theme_script = Script(f"""
-            document.documentElement.classList.add('uk-theme-{self.value}');
-        """)
+        theme_script = fh.Script(f'''
+            document.documentElement.classList.add("uk-theme-{self.value}");
+        ''')
         
         return (*base_headers, custom_style, theme_script)
     

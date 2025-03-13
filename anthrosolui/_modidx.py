@@ -231,4 +231,6 @@ d = { 'settings': { 'branch': 'main',
                                      'anthrosolui.franken.apply_classes': ('franken.html#apply_classes', 'anthrosolui/franken.py'),
                                      'anthrosolui.franken.get_franken_renderer': ( 'franken.html#get_franken_renderer',
                                                                                    'anthrosolui/franken.py'),
-                                     'anthrosolui.franken.render_md': ('franken.html#render_md', 'anthrosolui/franken.py')}}}
+                                     'anthrosolui.franken.render_md': ('franken.html#render_md', 'anthrosolui/franken.py')},
+            'anthrosolui.streaming': { 'anthrosolui.streaming.StreamingContainer': ( 'streaming.html#streamingcontainer',
+                                                                                     'anthrosolui/streaming.py')}}}
